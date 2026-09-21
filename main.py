@@ -227,14 +227,68 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 4. (다음 그래프를 추가할 자리)
+# 구역 4. 일관객 합계 TOP 10
+# ============================================================
+st.header("④ 일관객 합계 TOP 10")
+st.markdown(
+    "이 기간 동안 일관객을 모두 더한 값이 가장 큰 10편입니다. "
+    "관객이 많은 영화가 위쪽에 오도록 정렬했고, "
+    "막대에 마우스를 올리면 그 영화가 10위권에 든 날수도 함께 보여줍니다."
+)
+
+# 영화별로 일관객 합계와, 10위권에 든 날수(등재일수)를 같이 구합니다.
+top10 = (
+    df.groupby("영화명")
+    .agg(합계관객=("일관객", "sum"), 등재일수=("날짜", "count"))
+    .sort_values("합계관객", ascending=False)
+    .head(10)
+    .reset_index()
+)
+
+fig4 = px.bar(
+    top10,
+    x="합계관객",
+    y="영화명",
+    orientation="h",
+    title="일관객 합계 TOP 10",
+    custom_data=["등재일수"],
+)
+
+# 관객이 많은 영화가 맨 위에 오도록, 값 기준 오름차순으로 축 순서를 정합니다.
+fig4.update_layout(
+    xaxis_title="일관객 합계(명)",
+    yaxis_title="영화명",
+    yaxis={"categoryorder": "total ascending"},
+)
+fig4.update_traces(
+    marker_color="#457b9d",
+    hovertemplate=(
+        "영화: %{y}<br>"
+        "일관객 합계: %{x:,}명<br>"
+        "10위권 등재일수: %{customdata[0]}일"
+        "<extra></extra>"
+    ),
+)
+
+st.plotly_chart(fig4, width="stretch", key="chart_4")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 등재일수가 짧아도 일관객 합계가 큰 영화는 개봉 초반에 폭발적으로 흥행했다는 뜻이다.",
+    key="insight_4",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 5. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("④ 그래프 제목")
+# st.header("⑤ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig4, width="stretch", key="chart_4")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_4")
+# st.plotly_chart(fig5, width="stretch", key="chart_5")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_5")
 # st.divider()
 # ============================================================
