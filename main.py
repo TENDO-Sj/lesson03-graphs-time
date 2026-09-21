@@ -281,14 +281,65 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 5. (다음 그래프를 추가할 자리)
+# 구역 5. 월 × 요일별 일관객 합계 히트맵
+# ============================================================
+st.header("⑤ 월 × 요일별 일관객 합계 히트맵")
+st.markdown(
+    "날짜에서 '월'과 '요일'을 뽑아, 월과 요일이 겹치는 칸마다 일관객을 모두 더했습니다. "
+    "색이 진할수록 그 월·요일 조합에 관객이 많이 몰렸다는 뜻이에요."
+)
+
+# 날짜에서 월과 요일을 뽑습니다.
+heat_df = df.copy()
+heat_df["월"] = heat_df["날짜"].dt.month
+heat_df["요일번호"] = heat_df["날짜"].dt.dayofweek  # 월요일=0 ... 일요일=6
+
+weekday_names = ["월", "화", "수", "목", "금", "토", "일"]
+heat_df["요일"] = heat_df["요일번호"].map(dict(enumerate(weekday_names)))
+
+# 월 × 요일 조합별로 일관객을 더해서 표(피벗) 형태로 만듭니다.
+pivot = heat_df.pivot_table(
+    index="요일", columns="월", values="일관객", aggfunc="sum", fill_value=0
+)
+
+# 행은 월요일부터 일요일 순서로, 열은 1월부터 12월 순서로 정렬합니다.
+pivot = pivot.reindex(weekday_names)
+pivot = pivot.reindex(sorted(pivot.columns), axis=1)
+
+fig5 = px.imshow(
+    pivot,
+    color_continuous_scale="Blues",  # 값이 클수록 진한 색
+    aspect="auto",
+    title="월 × 요일별 일관객 합계",
+)
+fig5.update_layout(
+    xaxis_title="월",
+    yaxis_title="요일",
+    coloraxis_colorbar_title="합계(명)",
+)
+fig5.update_traces(
+    hovertemplate="월: %{x}월<br>요일: %{y}요일<br>합계: %{z:,}명<extra></extra>"
+)
+
+st.plotly_chart(fig5, width="stretch", key="chart_5")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 금요일과 토요일에 관객이 특히 많이 몰린다.",
+    key="insight_5",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 6. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("⑤ 그래프 제목")
+# st.header("⑥ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig5, width="stretch", key="chart_5")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_5")
+# st.plotly_chart(fig6, width="stretch", key="chart_6")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_6")
 # st.divider()
 # ============================================================
