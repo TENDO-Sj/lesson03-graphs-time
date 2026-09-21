@@ -103,14 +103,66 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 2. (다음 그래프를 추가할 자리)
+# 구역 2. 일관객 합계 상위 5편 비교
+# ============================================================
+st.header("② 일관객 합계 상위 5편 비교")
+st.markdown(
+    "이 기간 동안 일관객(하루 관객수)을 모두 더했을 때 합계가 가장 큰 5편을 뽑아, "
+    "날짜별 일관객을 한 그래프에 겹쳐서 보여줍니다. "
+    "범례의 영화 이름을 클릭하면 그 영화의 선을 껐다 켰다 할 수 있어요."
+)
+
+# 영화별로 일관객을 모두 더해서, 합계가 큰 순서로 5편을 뽑습니다.
+top5_totals = (
+    df.groupby("영화명")["일관객"]
+    .sum()
+    .sort_values(ascending=False)
+    .head(5)
+)
+top5_names = top5_totals.index.tolist()
+
+# 상위 5편에 해당하는 데이터만 뽑아서, 날짜 순서대로 정렬합니다.
+top5_df = df[df["영화명"].isin(top5_names)].sort_values("날짜")
+
+fig2 = px.line(
+    top5_df,
+    x="날짜",
+    y="일관객",
+    color="영화명",
+    markers=True,
+    title="일관객 합계 상위 5편의 날짜별 일관객 비교",
+    category_orders={"영화명": top5_names},  # 범례를 합계 순서대로 정렬
+)
+
+fig2.update_traces(
+    hovertemplate="영화: %{fullData.name}<br>날짜: %{x|%Y-%m-%d}<br>일관객: %{y:,}명<extra></extra>"
+)
+fig2.update_layout(
+    xaxis_title="날짜",
+    yaxis_title="일관객(명)",
+    hovermode="x unified",
+    legend_title_text="영화명 (클릭해서 켜고 끄기)",
+)
+
+st.plotly_chart(fig2, width="stretch", key="chart_2")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 상위 5편 중에서도 특정 영화가 특정 시기에 압도적으로 관객이 몰렸다.",
+    key="insight_2",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 3. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("② 그래프 제목")
+# st.header("③ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig2, width="stretch", key="chart_2")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_2")
+# st.plotly_chart(fig3, width="stretch", key="chart_3")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_3")
 # st.divider()
 # ============================================================
