@@ -155,14 +155,86 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 3. (다음 그래프를 추가할 자리)
+# 구역 3. 날짜별 10위권 전체 일관객 합계
+# ============================================================
+st.header("③ 날짜별 10위권 전체 일관객 합계")
+st.markdown(
+    "그날그날 박스오피스 10위 안에 든 영화들의 일관객을 모두 더한 값입니다. "
+    "극장가 전체가 얼마나 붐볐는지를 보여주는 지표라고 볼 수 있어요. "
+    "합계가 가장 컸던 3일은 그래프 위에 날짜와 함께 표시했습니다."
+)
+
+# 날짜별로 10위권 영화들의 일관객을 모두 더합니다.
+daily_total = (
+    df.groupby("날짜")["일관객"]
+    .sum()
+    .reset_index()
+    .rename(columns={"일관객": "합계관객"})
+    .sort_values("날짜")
+)
+
+fig3 = px.area(
+    daily_total,
+    x="날짜",
+    y="합계관객",
+    title="날짜별 10위권 전체 일관객 합계",
+)
+fig3.update_traces(
+    line_color="#2a9d8f",
+    fillcolor="rgba(42, 157, 143, 0.3)",
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+)
+fig3.update_layout(
+    xaxis_title="날짜",
+    yaxis_title="10위권 합계 관객수(명)",
+)
+
+# 합계가 가장 컸던 3일을 뽑아서, 점과 날짜 라벨을 그래프 위에 표시합니다.
+top3_days = daily_total.sort_values("합계관객", ascending=False).head(3)
+
+fig3.add_scatter(
+    x=top3_days["날짜"],
+    y=top3_days["합계관객"],
+    mode="markers",
+    marker=dict(color="#e63946", size=11, line=dict(color="white", width=1)),
+    name="합계 상위 3일",
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+)
+
+# 날짜가 서로 가까우면 라벨이 겹칠 수 있어서, 순서대로 세로 위치를 엇갈리게 둡니다.
+ay_offsets = [-35, -65, -95]
+for i, (_, row) in enumerate(top3_days.iterrows()):
+    fig3.add_annotation(
+        x=row["날짜"],
+        y=row["합계관객"],
+        text=row["날짜"].strftime("%Y-%m-%d"),
+        showarrow=True,
+        arrowhead=2,
+        ay=ay_offsets[i],
+        font=dict(color="#e63946", size=12),
+        bgcolor="white",
+        bordercolor="#e63946",
+    )
+
+st.plotly_chart(fig3, width="stretch", key="chart_3")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 명절이나 방학 시즌에 극장가 전체 관객이 크게 몰린다.",
+    key="insight_3",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 4. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("③ 그래프 제목")
+# st.header("④ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig3, width="stretch", key="chart_3")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_3")
+# st.plotly_chart(fig4, width="stretch", key="chart_4")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_4")
 # st.divider()
 # ============================================================
